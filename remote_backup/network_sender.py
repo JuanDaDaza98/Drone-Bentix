@@ -1,9 +1,8 @@
 import socket
-from time import sleep
 import time
 
 class DroneSender:
-    def __init__(self, ip="192.168.4.3", control_port=5000, video_port=5001):
+    def __init__(self, ip="192.168.4.3", control_port=5000, video_port=6000):
         self.ip = ip
         self.control_port = control_port
         self.video_port = video_port
