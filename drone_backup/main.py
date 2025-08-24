@@ -2,21 +2,19 @@ import threading
 from time import sleep
 from motor_controller import MotorController
 from led_controller import LEDController
-from network import ControlReceiver, VideoReceiver
+from network import DroneReceiver
 from video_streamer import video_stream
 
 # === Configuración de motores y LEDs ===
 motors = MotorController()
 leds = LEDController([17, 27, 22])
-control_receiver = ControlReceiver()
-video_receiver = VideoReceiver()
+receiver = DroneReceiver()
 
 # === Hilo de control ===
 def control_loop():
     try:
-        control_receiver.start()
         while True:
-            data = control_receiver.receive()
+            data = receiver.receive_control_data()
             if not data or len(data) < 5:
                 continue
             y1, x2, y2, b1, b2 = data
@@ -29,14 +27,14 @@ def control_loop():
     finally:
         motors.stop()
         leds.turn_off()
-        control_receiver.stop()
+        receiver.close()
 
 # === Hilo de video con reconexión automática ===
 def video_loop():
     while True:
         try:
-            video_receiver.start()
-            video_stream(video_receiver.client)
+            receiver.wait_for_video_connection()
+            video_stream(receiver.video_client)
         except Exception as e:
             print(f"[VIDEO ERROR] {e}")
         finally:
@@ -44,7 +42,7 @@ def video_loop():
             sleep(2)
 
 if __name__ == "__main__":
-    # Espera conexiones en hilos separados
+    receiver.wait_for_connections()
     t_video = threading.Thread(target=video_loop)
     t_control = threading.Thread(target=control_loop)
 

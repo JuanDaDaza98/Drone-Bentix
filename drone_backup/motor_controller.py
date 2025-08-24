@@ -1,7 +1,6 @@
 import board
 import busio
 from adafruit_pca9685 import PCA9685
-from time import sleep
 
 class MotorController:
     def __init__(self, i2c_freq=50):
